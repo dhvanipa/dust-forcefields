@@ -1,0 +1,5 @@
+scrollback: 10000
+procs:
+  client:
+    cwd: packages/client
+    shell: pnpm run dev

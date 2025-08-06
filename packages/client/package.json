@@ -1,0 +1,42 @@
+{
+  "name": "client",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "preview": "vite preview",
+    "test": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@dust/world": "https://pkg.pr.new/dustproject/dust/@dust/world@2b5a710",
+    "@latticexyz/common": "2.2.23-5ebd3d31b6ab3fbbfa8994fefcbf46d4e44c6ec2",
+    "@latticexyz/react": "2.2.23-5ebd3d31b6ab3fbbfa8994fefcbf46d4e44c6ec2",
+    "@latticexyz/schema-type": "2.2.23-5ebd3d31b6ab3fbbfa8994fefcbf46d4e44c6ec2",
+    "@latticexyz/stash": "2.2.23-5ebd3d31b6ab3fbbfa8994fefcbf46d4e44c6ec2",
+    "@latticexyz/store-sync": "2.2.23-5ebd3d31b6ab3fbbfa8994fefcbf46d4e44c6ec2",
+    "@latticexyz/utils": "2.2.23-5ebd3d31b6ab3fbbfa8994fefcbf46d4e44c6ec2",
+    "@latticexyz/world": "2.2.23-5ebd3d31b6ab3fbbfa8994fefcbf46d4e44c6ec2",
+    "@tanstack/react-query": "^5.63.0",
+    "dustkit": "https://pkg.pr.new/dustproject/dust/dustkit@2b5a710",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-error-boundary": "5.0.0",
+    "tailwind-merge": "^2.6.0",
+    "viem": "2.30.6",
+    "wagmi": "2.15.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.11",
+    "@types/react": "18.2.22",
+    "@types/react-dom": "18.2.7",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint-plugin-react": "7.31.11",
+    "eslint-plugin-react-hooks": "4.6.0",
+    "tailwindcss": "^4.1.11",
+    "vite": "^6.0.7",
+    "vite-plugin-mud": "2.2.23-5ebd3d31b6ab3fbbfa8994fefcbf46d4e44c6ec2"
+  }
+}

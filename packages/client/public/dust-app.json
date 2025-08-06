@@ -1,0 +1,9 @@
+{
+  "$schema": "https://esm.sh/pr/dustproject/dust/dustkit@5d718ab/json-schemas/app-config.json",
+  "name": "Force Fields Map",
+  "startUrl": "/",
+  "defaultSize": {
+    "width": 600,
+    "height": 500
+  }
+}
