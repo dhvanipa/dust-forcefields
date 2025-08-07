@@ -7,10 +7,6 @@ export function useDustClient() {
     queryFn: async () => {
       const dustClient = await connectDustClient();
       console.log("app connected", dustClient);
-      document.documentElement.setAttribute(
-        "data-dust-app",
-        dustClient.appContext.id
-      );
       return dustClient;
     },
   });

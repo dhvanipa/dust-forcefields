@@ -1,4 +1,16 @@
 import { createStash } from "@latticexyz/stash/internal";
-import config from "@dust/world/mud.config";
+import mudConfig from "@dust/world/mud.config";
 
-export const stash = createStash(config);
+export const tables = {
+  Energy: mudConfig.tables.Energy,
+};
+
+export const stashConfig = {
+  namespaces: {
+    "": {
+      tables,
+    },
+  },
+};
+
+export const stash = createStash(stashConfig);
