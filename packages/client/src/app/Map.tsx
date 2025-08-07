@@ -1,36 +1,54 @@
 import { useDustClient } from "../useDustClient";
 import { CRS } from "leaflet";
-import { useCallback, useRef } from "react";
+import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { MapContainer } from "react-leaflet";
 import type { Map as LMap } from "leaflet";
+import { PannableMapTiles } from "./PannableMapTiles";
+import { MapTileMetadata } from "./types";
+import {
+  pannableWorldBoundsFromData,
+  world2ToPannableMapCoordinates,
+} from "./utils";
 
-function world2ToPannableMapCoordinates(
-  pos: [x: number, y: number]
-): [x: number, y: number] {
-  return [-pos[1], pos[0]];
-}
+const PannableMapContext = createContext<{
+  map: LMap | null;
+}>({ map: null });
 
 export function Map() {
   const { data: dustClient } = useDustClient();
   const map = useRef<LMap | null>(null);
+  const [tileMetadata, setTileMetadata] = useState<MapTileMetadata | null>(
+    null
+  );
+
+  const fetchTileMetadata = useCallback(async () => {
+    if (!dustClient) return;
+    const metadata = await dustClient.provider.request({
+      method: "getMapTileMetadata",
+    });
+    setTileMetadata(metadata);
+  }, [dustClient]);
+
+  useEffect(() => {
+    fetchTileMetadata();
+  }, [fetchTileMetadata]);
 
   const initMap = useCallback(
     (newMap: LMap) => {
       map.current = newMap;
-      if (newMap) {
+      if (newMap && tileMetadata) {
         newMap.dragging.enable();
         newMap.zoomControl.setPosition("topright");
-        const worldBounds = [
-          [2048, -2048],
-          [-2048, 2048],
-        ];
+        const worldBounds = pannableWorldBoundsFromData(tileMetadata);
         newMap.setMaxBounds(worldBounds);
-        // setVersion(version + 1);
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [tileMetadata]
   );
+
+  if (!tileMetadata) {
+    return null;
+  }
 
   return (
     <div className="max-w-screen-sm mx-auto space-y-8 p-8">
@@ -45,24 +63,24 @@ export function Map() {
         attributionControl={false}
         className="vw-100 vh-100 static-map"
       >
-        {/* <PannableMapContext.Provider value={{ map: map.current }}>
-          <PannableMapTiles mapData={tileMetadata} tileType="surface" />
-          {landmarks.data && (
-            <PannableMapLandmarkLabels landmarks={landmarks.data} />
-          )}
-          {children}
-
-          {markers.map((marker) => (
-            <StaticMapMarker
-              key={marker.id}
-              position={marker.position}
-              label={marker.label}
-              id={marker.id}
-              selected={selectedMarkerId === marker.id}
-              onClick={handleMarkerSelect}
-            />
-          ))}
-        </PannableMapContext.Provider> */}
+        <PannableMapContext.Provider value={{ map: map.current }}>
+          <PannableMapTiles
+            mapData={tileMetadata}
+            tileType="surface"
+            tileFn={(xy, zoom) => {
+              return dustClient?.provider.request({
+                method: "getMapTileURL",
+                params: {
+                  tileImageTemplateURL: tileMetadata.tileImageTemplateURL,
+                  versionIndex: tileMetadata.versionIndex,
+                  kind: "surface",
+                  pos: xy,
+                  zoom: zoom,
+                },
+              });
+            }}
+          />
+        </PannableMapContext.Provider>
       </MapContainer>
     </div>
   );
