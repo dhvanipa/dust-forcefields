@@ -23,26 +23,26 @@
     "@tanstack/react-query": "^5.63.0",
     "dustkit": "https://pkg.pr.new/dustproject/dust/dustkit@a587878",
     "leaflet": "^1.9.4",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "react-error-boundary": "5.0.0",
-    "react-leaflet": "^5.0.0",
+    "react-leaflet": "5.0.0-rc.2",
     "tailwind-merge": "^2.6.0",
     "viem": "2.30.6",
     "wagmi": "2.15.5"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.11",
-    "@types/leaflet": "^1.9.18",
-    "@types/react": "18.2.22",
-    "@types/react-dom": "18.2.7",
+    "@types/leaflet": "^1.9.20",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
     "@types/react-leaflet": "^3.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "eslint-plugin-react": "7.31.11",
     "eslint-plugin-react-hooks": "4.6.0",
     "tailwindcss": "^4.1.11",
     "vite": "^6.1.0",
-    "vite-tsconfig-paths": "^5.1.4",
-    "vite-plugin-mud": "2.2.23-5ebd3d31b6ab3fbbfa8994fefcbf46d4e44c6ec2"
+    "vite-plugin-mud": "2.2.23-5ebd3d31b6ab3fbbfa8994fefcbf46d4e44c6ec2",
+    "vite-tsconfig-paths": "^5.1.4"
   }
 }
