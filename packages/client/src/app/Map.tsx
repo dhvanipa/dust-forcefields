@@ -1,6 +1,6 @@
 import { useDustClient } from "../useDustClient";
 import { CRS, TileLayer as LeafletTileLayer } from "leaflet";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Map as LMap } from "leaflet";
 import { createTileLayerComponent } from "@react-leaflet/core";
 import { MapContainer, type TileLayerProps } from "react-leaflet";
@@ -13,6 +13,11 @@ export function Map() {
   const { data: dustClient } = useDustClient();
   const [map, setMap] = useState<LMap | null>(null);
   const [tilesUpdatedAt, setTilesUpdatedAt] = useState(0);
+
+  useEffect(() => {
+    if (!map) return;
+    map.setView([500, -120], undefined, { animate: false });
+  }, [map]);
 
   return (
     <div className="flex flex-col items-center">
