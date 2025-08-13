@@ -1,87 +1,73 @@
 import { useDustClient } from "../useDustClient";
-import { CRS } from "leaflet";
-import { createContext, useCallback, useEffect, useRef, useState } from "react";
-import { MapContainer } from "react-leaflet";
+import { CRS, TileLayer as LeafletTileLayer } from "leaflet";
+import { useState } from "react";
 import type { Map as LMap } from "leaflet";
-import { PannableMapTiles } from "./PannableMapTiles";
-import { MapTileMetadata } from "./types";
-import {
-  pannableWorldBoundsFromData,
-  world2ToPannableMapCoordinates,
-} from "./utils";
+import { createTileLayerComponent } from "@react-leaflet/core";
+import { MapContainer, type TileLayerProps } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 
-const PannableMapContext = createContext<{
-  map: LMap | null;
-}>({ map: null });
+// force map to re-render in dev
+const now = Date.now();
 
 export function Map() {
   const { data: dustClient } = useDustClient();
-  const map = useRef<LMap | null>(null);
-  const [tileMetadata, setTileMetadata] = useState<MapTileMetadata | null>(
-    null
-  );
-
-  const fetchTileMetadata = useCallback(async () => {
-    if (!dustClient) return;
-    const metadata = await dustClient.provider.request({
-      method: "getMapTileMetadata",
-    });
-    setTileMetadata(metadata);
-  }, [dustClient]);
-
-  useEffect(() => {
-    fetchTileMetadata();
-  }, [fetchTileMetadata]);
-
-  const initMap = useCallback(
-    (newMap: LMap) => {
-      map.current = newMap;
-      if (newMap && tileMetadata) {
-        newMap.dragging.enable();
-        newMap.zoomControl.setPosition("topright");
-        const worldBounds = pannableWorldBoundsFromData(tileMetadata);
-        newMap.setMaxBounds(worldBounds);
-      }
-    },
-    [tileMetadata]
-  );
-
-  if (!tileMetadata) {
-    return null;
-  }
+  const [map, setMap] = useState<LMap | null>(null);
+  const [tilesUpdatedAt, setTilesUpdatedAt] = useState(0);
 
   return (
-    <div className="max-w-screen-sm mx-auto space-y-8 p-8">
-      <MapContainer
-        center={world2ToPannableMapCoordinates([500, -120])}
-        minZoom={-1}
-        maxZoom={4}
-        maxBoundsViscosity={0.5}
-        ref={initMap}
-        zoom={2}
-        crs={CRS.Simple}
-        attributionControl={false}
-        className="vw-100 vh-100 static-map"
-      >
-        <PannableMapContext.Provider value={{ map: map.current }}>
-          <PannableMapTiles
-            mapData={tileMetadata}
-            tileType="surface"
-            tileFn={(xy, zoom) => {
-              return dustClient?.provider.request({
-                method: "getMapTileURL",
-                params: {
-                  tileImageTemplateURL: tileMetadata.tileImageTemplateURL,
-                  versionIndex: tileMetadata.versionIndex,
-                  kind: "surface",
-                  pos: xy,
-                  zoom: zoom,
-                },
-              });
-            }}
+    <div className="flex flex-col items-center">
+      <div className="max-w-screen-sm mx-auto space-y-8 p-8">
+        <MapContainer
+          // force map to re-render in dev
+          key={now}
+          ref={setMap}
+          crs={CRS.Simple}
+          center={world2ToPannableMapCoordinates([500, -120])}
+          zoom={2}
+          attributionControl={false}
+          className="vw-100 vh-100"
+        >
+          <TileLayer
+            // force tiles to reload
+            key={tilesUpdatedAt}
+            getTileUrl={({ x, y, z }) =>
+              `http://localhost:3000/api/assets/map/surface/${x}/${y}/${z}/tile`
+            }
+            // TODO: load these props from map data?
+            tileSize={512}
+            // zoom range of tiles
+            minNativeZoom={0}
+            maxNativeZoom={4}
+            // zoom range of map
+            minZoom={-1}
+            maxZoom={4}
+            className="opacity-70!"
           />
-        </PannableMapContext.Provider>
-      </MapContainer>
+        </MapContainer>
+      </div>
     </div>
   );
 }
+
+type Vec2 = [number, number];
+
+function world2ToPannableMapCoordinates(pos: Vec2): Vec2 {
+  return [-pos[1], pos[0]];
+}
+
+const TileLayer = createTileLayerComponent<
+  LeafletTileLayer,
+  Omit<TileLayerProps, "url"> & Pick<LeafletTileLayer, "getTileUrl">
+>(
+  ({ getTileUrl, ...props }, context) => {
+    const layer = new LeafletTileLayer("", props);
+    layer.getTileUrl = getTileUrl;
+    return {
+      instance: layer,
+      context: { ...context, layerContainer: layer },
+    } as never;
+  },
+  (layer, props) => {
+    layer.getTileUrl = props.getTileUrl;
+  }
+);
