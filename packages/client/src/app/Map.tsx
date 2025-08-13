@@ -1,10 +1,11 @@
 import { useDustClient } from "../useDustClient";
 import { CRS, TileLayer as LeafletTileLayer } from "leaflet";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Map as LMap } from "leaflet";
 import { createTileLayerComponent } from "@react-leaflet/core";
 import { MapContainer, type TileLayerProps } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { usePlayerPositionQuery } from "../common/usePlayerPositionQuery";
 
 // force map to re-render in dev
 const now = Date.now();
@@ -13,11 +14,20 @@ export function Map() {
   const { data: dustClient } = useDustClient();
   const [map, setMap] = useState<LMap | null>(null);
   const [tilesUpdatedAt, setTilesUpdatedAt] = useState(0);
+  const playerPosition = usePlayerPositionQuery();
+  const [x, y, z] = Array.isArray(playerPosition.data)
+    ? playerPosition.data
+    : [0, 0, 0];
+
+  const center = useMemo(
+    () => [-(z ?? 0), x ?? 0] satisfies [number, number],
+    [z, x]
+  );
 
   useEffect(() => {
     if (!map) return;
-    map.setView([500, -120], undefined, { animate: false });
-  }, [map]);
+    map.setView(center, undefined, { animate: false });
+  }, [map, center]);
 
   return (
     <div className="fullpage-map pannable-map-container flex relative z-0 h-full">
