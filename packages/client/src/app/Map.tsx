@@ -20,36 +20,34 @@ export function Map() {
   }, [map]);
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="max-w-screen-sm mx-auto space-y-8 p-8">
-        <MapContainer
-          // force map to re-render in dev
-          key={now}
-          ref={setMap}
-          crs={CRS.Simple}
-          center={world2ToPannableMapCoordinates([500, -120])}
-          zoom={2}
-          attributionControl={false}
-          className="vw-100 vh-100"
-        >
-          <TileLayer
-            // force tiles to reload
-            key={tilesUpdatedAt}
-            getTileUrl={({ x, y, z }) =>
-              `http://localhost:3000/api/assets/map/surface/${x}/${y}/${z}/tile`
-            }
-            // TODO: load these props from map data?
-            tileSize={512}
-            // zoom range of tiles
-            minNativeZoom={0}
-            maxNativeZoom={4}
-            // zoom range of map
-            minZoom={-1}
-            maxZoom={4}
-            className="opacity-70!"
-          />
-        </MapContainer>
-      </div>
+    <div className="fullpage-map pannable-map-container flex relative z-0 h-full">
+      <MapContainer
+        // force map to re-render in dev
+        key={now}
+        ref={setMap}
+        crs={CRS.Simple}
+        center={world2ToPannableMapCoordinates([500, -120])}
+        zoom={2}
+        attributionControl={false}
+        className="vw-100 vh-100"
+      >
+        <TileLayer
+          // force tiles to reload
+          key={tilesUpdatedAt}
+          getTileUrl={({ x, y, z }) =>
+            `http://localhost:3000/api/assets/map/surface/${x}/${y}/${z}/tile`
+          }
+          // TODO: load these props from map data?
+          tileSize={512}
+          // zoom range of tiles
+          minNativeZoom={0}
+          maxNativeZoom={4}
+          // zoom range of map
+          minZoom={-1}
+          maxZoom={4}
+          className="opacity-70!"
+        />
+      </MapContainer>
     </div>
   );
 }
