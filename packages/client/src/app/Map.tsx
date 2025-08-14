@@ -15,8 +15,8 @@ export function Map() {
   const [map, setMap] = useState<LMap | null>(null);
   const [tilesUpdatedAt, setTilesUpdatedAt] = useState(0);
   const playerPosition = usePlayerPositionQuery();
-  const [x, y, z] = Array.isArray(playerPosition.data)
-    ? playerPosition.data
+  const [x, y, z] = playerPosition.data
+    ? [playerPosition.data.x, playerPosition.data.y, playerPosition.data.z]
     : [0, 0, 0];
 
   const center = useMemo(
@@ -36,10 +36,9 @@ export function Map() {
         key={now}
         ref={setMap}
         crs={CRS.Simple}
-        center={world2ToPannableMapCoordinates([500, -120])}
+        center={center}
         zoom={2}
         attributionControl={false}
-        className="vw-100 vh-100"
       >
         <TileLayer
           // force tiles to reload
@@ -55,17 +54,10 @@ export function Map() {
           // zoom range of map
           minZoom={-1}
           maxZoom={4}
-          className="opacity-70!"
         />
       </MapContainer>
     </div>
   );
-}
-
-type Vec2 = [number, number];
-
-function world2ToPannableMapCoordinates(pos: Vec2): Vec2 {
-  return [-pos[1], pos[0]];
 }
 
 const TileLayer = createTileLayerComponent<

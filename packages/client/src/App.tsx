@@ -1,9 +1,7 @@
 import { Synced } from "./mud/Synced";
 import { Map } from "./app/Map";
-import { useDustClient } from "./useDustClient";
 
 export function App() {
-  useDustClient();
   return (
     <div className="min-h-screen text-white bg-slate-800">
       <Synced
