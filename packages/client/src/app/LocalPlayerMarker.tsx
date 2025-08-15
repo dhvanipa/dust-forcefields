@@ -6,7 +6,7 @@ import { usePlayerOrientationQuery } from "../common/usePlayerOrientationQuery";
 import { useEffect, useMemo } from "react";
 import { Marker } from "react-leaflet";
 import { PlayerPosition } from "../common/usePlayerPositionQuery";
-import { Vec2, worldToPannableMapCoordinates } from "./utils";
+import { Vec2, worldToMapCoordinates } from "./utils";
 
 type LocalPlayerMarkerProps = {
   map: LMap | null;
@@ -17,7 +17,7 @@ export function LocalPlayerMarker({
   map,
   playerPosition,
 }: LocalPlayerMarkerProps) {
-  const playerMapPos: Vec2 = worldToPannableMapCoordinates([
+  const playerMapPos: Vec2 = worldToMapCoordinates([
     playerPosition.x,
     playerPosition.y,
     playerPosition.z,

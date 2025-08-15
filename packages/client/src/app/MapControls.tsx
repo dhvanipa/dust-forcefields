@@ -1,5 +1,5 @@
 import type { Map as LMap } from "leaflet";
-import { maxZoom, minZoom, Vec2, worldToPannableMapCoordinates } from "./utils";
+import { maxZoom, minZoom, Vec2, worldToMapCoordinates } from "./utils";
 import { PlayerPosition } from "../common/usePlayerPositionQuery";
 
 type MapControlProps = {
@@ -15,7 +15,7 @@ export function MapControls({
 }: MapControlProps) {
   const centerOnPlayer = () => {
     if (map && playerPosition) {
-      const playerMapPos: Vec2 = worldToPannableMapCoordinates([
+      const playerMapPos: Vec2 = worldToMapCoordinates([
         playerPosition.x,
         playerPosition.y,
         playerPosition.z,
