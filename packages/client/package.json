@@ -11,7 +11,7 @@
     "test": "tsc --noEmit"
   },
   "dependencies": {
-    "@dust/world": "https://pkg.pr.new/dustproject/dust/@dust/world@a587878",
+    "@dust/world": "https://pkg.pr.new/dustproject/dust/@dust/world@1c7e44d",
     "@latticexyz/common": "2.2.23-5ebd3d31b6ab3fbbfa8994fefcbf46d4e44c6ec2",
     "@latticexyz/react": "2.2.23-5ebd3d31b6ab3fbbfa8994fefcbf46d4e44c6ec2",
     "@latticexyz/schema-type": "2.2.23-5ebd3d31b6ab3fbbfa8994fefcbf46d4e44c6ec2",
@@ -21,7 +21,7 @@
     "@latticexyz/world": "2.2.23-5ebd3d31b6ab3fbbfa8994fefcbf46d4e44c6ec2",
     "@react-leaflet/core": "^3.0.0",
     "@tanstack/react-query": "^5.63.0",
-    "dustkit": "https://pkg.pr.new/dustproject/dust/dustkit@a587878",
+    "dustkit": "https://pkg.pr.new/dustproject/dust/dustkit@1c7e44d",
     "leaflet": "^1.9.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

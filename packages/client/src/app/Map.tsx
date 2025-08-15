@@ -7,6 +7,10 @@ import { MapContainer, type TileLayerProps } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { usePlayerPositionQuery } from "../common/usePlayerPositionQuery";
 import { Vec3, type ReadonlyVec3 } from "@dust/world/internal";
+import { Marker } from "react-leaflet";
+import { divIcon } from "leaflet";
+
+import localPlayerMarkerBig from "/public/player-marker-small.png";
 
 // force map to re-render in dev
 const now = Date.now();
@@ -16,7 +20,25 @@ export function Map() {
   const [map, setMap] = useState<LMap | null>(null);
   const [tilesUpdatedAt, setTilesUpdatedAt] = useState(0);
   const playerPosition = usePlayerPositionQuery();
+  const playerMapPos: Vec2 = playerPosition.data
+    ? worldToPannableMapCoordinates([
+        playerPosition.data.x,
+        playerPosition.data.y,
+        playerPosition.data.z,
+      ])
+    : [0, 0];
   const [initialPosition, setInitialPosition] = useState<Vec3 | null>(null);
+  const orientation = 0;
+  const icon = useMemo(
+    () =>
+      divIcon({
+        iconSize: [24, 24],
+        iconAnchor: [24 / 2, 24 / 2],
+        className: "local-marker",
+        html: `<div style="transform: rotate(${orientation}rad); background-image: url(${localPlayerMarkerBig.src})" class="local-marker-inner"></div>`,
+      }),
+    [orientation]
+  );
 
   useEffect(() => {
     if (!playerPosition.data) return;
@@ -70,6 +92,7 @@ export function Map() {
           minZoom={-1}
           maxZoom={4}
         />
+        <Marker position={playerMapPos} icon={icon} zIndexOffset={100000} />;
       </MapContainer>
     </div>
   );
