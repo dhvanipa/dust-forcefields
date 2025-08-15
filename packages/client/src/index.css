@@ -8,7 +8,9 @@
 
 .map .leaflet-top {
   top: auto;
-  bottom: 1vmin;
+  bottom: 2vmin;
+  left: auto;
+  right: 2vmin;
 }
 
 .local-marker-inner {
