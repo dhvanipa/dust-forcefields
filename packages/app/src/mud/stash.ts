@@ -7,6 +7,8 @@ import { redstone } from "./redstone";
 
 export const tables = {
   Energy: dustWorldConfig.tables.Energy,
+  Fragment: dustWorldConfig.tables.Fragment,
+  EntityObjectType: dustWorldConfig.tables.EntityObjectType,
 };
 
 export const stashConfig = {
