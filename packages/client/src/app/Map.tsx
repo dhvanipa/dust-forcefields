@@ -1,4 +1,3 @@
-import { useDustClient } from "../useDustClient";
 import { CRS, TileLayer as LeafletTileLayer } from "leaflet";
 import { useEffect, useState } from "react";
 import type { Map as LMap } from "leaflet";
@@ -14,7 +13,6 @@ import { LocalPlayerMarker } from "./LocalPlayerMarker";
 const now = Date.now();
 
 export function Map() {
-  const { data: dustClient } = useDustClient();
   const [map, setMap] = useState<LMap | null>(null);
   const [currentZoom, setCurrentZoom] = useState(2);
   const playerPosition = usePlayerPositionQuery();
@@ -33,10 +31,6 @@ export function Map() {
       map.off("zoomend", handleZoom);
     };
   }, [map]);
-
-  if (!dustClient) {
-    return null;
-  }
 
   return (
     <div className="map flex relative z-0 h-full">
