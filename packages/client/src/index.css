@@ -6,13 +6,6 @@
   background-color: hsl(238deg 11% 30%) !important;
 }
 
-.map .leaflet-top {
-  top: auto;
-  bottom: 2vmin;
-  left: auto;
-  right: 2vmin;
-}
-
 .local-marker-inner {
   width: 3vmin;
   height: 3vmin;

@@ -20,6 +20,7 @@ export function Map() {
   const { data: dustClient } = useDustClient();
   const [map, setMap] = useState<LMap | null>(null);
   const [tilesUpdatedAt, setTilesUpdatedAt] = useState(0);
+  const [currentZoom, setCurrentZoom] = useState(2);
   const playerPosition = usePlayerPositionQuery();
   const playerOrientation = usePlayerOrientationQuery();
   const playerMapPos: Vec2 = playerPosition.data
@@ -53,9 +54,33 @@ export function Map() {
     ]);
   }, [playerPosition.data]);
 
+  useEffect(() => {
+    if (!map) return;
+
+    const handleZoom = () => {
+      setCurrentZoom(map.getZoom());
+    };
+
+    map.on("zoomend", handleZoom);
+    setCurrentZoom(map.getZoom());
+
+    return () => {
+      map.off("zoomend", handleZoom);
+    };
+  }, [map]);
+
   if (!dustClient) {
     return null;
   }
+
+  const centerOnPlayer = () => {
+    if (map && playerPosition.data) {
+      map.panTo(playerMapPos);
+    }
+  };
+
+  const canZoomIn = currentZoom < 4;
+  const canZoomOut = currentZoom > -1;
 
   return (
     <div className="map flex relative z-0 h-full">
@@ -66,7 +91,7 @@ export function Map() {
         crs={CRS.Simple}
         center={worldToPannableMapCoordinates(initialPosition ?? [0, 0, 0])}
         minZoom={-1}
-        maxZoom={3}
+        maxZoom={4}
         maxBoundsViscosity={0.5}
         bounds={[
           [3072, -1536],
@@ -78,6 +103,7 @@ export function Map() {
         ]}
         zoom={2}
         attributionControl={false}
+        zoomControl={false}
       >
         <TileLayer
           // force tiles to reload
@@ -95,6 +121,44 @@ export function Map() {
           maxZoom={4}
         />
         <Marker position={playerMapPos} icon={icon} zIndexOffset={100000} />
+        <div className="leaflet-bottom leaflet-right">
+          <div className="leaflet-control leaflet-bar">
+            <button
+              onClick={centerOnPlayer}
+              className={`bg-white border-0 border-b border-gray-300 w-8 h-8 flex items-center justify-center cursor-pointer hover:bg-gray-50 text-black font-bold ${
+                !playerPosition.data ? "text-gray-400 cursor-not-allowed" : ""
+              }`}
+              disabled={!playerPosition.data}
+              title="Center on Player"
+            >
+              📍
+            </button>
+            <button
+              onClick={() => canZoomIn && map?.zoomIn()}
+              className={`bg-white border-0 border-b border-gray-300 w-8 h-8 flex items-center justify-center font-bold text-lg ${
+                canZoomIn
+                  ? "cursor-pointer hover:bg-gray-50 text-black"
+                  : "text-gray-400 cursor-not-allowed"
+              }`}
+              disabled={!canZoomIn}
+              title="Zoom In"
+            >
+              +
+            </button>
+            <button
+              onClick={() => canZoomOut && map?.zoomOut()}
+              className={`bg-white border-0 w-8 h-8 flex items-center justify-center font-bold text-lg ${
+                canZoomOut
+                  ? "cursor-pointer hover:bg-gray-50 text-black"
+                  : "text-gray-400 cursor-not-allowed"
+              }`}
+              disabled={!canZoomOut}
+              title="Zoom Out"
+            >
+              −
+            </button>
+          </div>
+        </div>
       </MapContainer>
     </div>
   );
