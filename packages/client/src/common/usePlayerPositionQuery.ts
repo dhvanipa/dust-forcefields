@@ -1,7 +1,7 @@
 import { skipToken, useQuery } from "@tanstack/react-query";
 import { useDustClient } from "../useDustClient";
 
-type PlayerPosition = {
+export type PlayerPosition = {
   x: number;
   y: number;
   z: number;
