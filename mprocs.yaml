@@ -1,5 +1,5 @@
 scrollback: 10000
 procs:
-  client:
-    cwd: packages/client
+  app:
+    cwd: packages/app
     shell: pnpm run dev

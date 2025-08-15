@@ -3,27 +3,19 @@
   "private": true,
   "scripts": {
     "build": "pnpm recursive run build",
-    "dev": "mprocs",
-    "dev:client": "pnpm --filter 'client' run dev",
-    "dev:contracts": "pnpm --filter 'contracts' dev",
-    "mud:up": "pnpm mud set-version --tag main && pnpm install",
-    "test": "pnpm recursive run test"
+    "dev": "pnpm --filter app dev"
   },
-  "devDependencies": {
-    "@latticexyz/cli": "2.2.23-5ebd3d31b6ab3fbbfa8994fefcbf46d4e44c6ec2",
-    "@latticexyz/common": "2.2.23-5ebd3d31b6ab3fbbfa8994fefcbf46d4e44c6ec2",
-    "@latticexyz/store-indexer": "2.2.23-5ebd3d31b6ab3fbbfa8994fefcbf46d4e44c6ec2",
-    "@types/debug": "4.1.7",
-    "@typescript-eslint/eslint-plugin": "7.1.1",
-    "@typescript-eslint/parser": "7.1.1",
-    "eslint": "8.57.0",
-    "mprocs": "^0.7.3",
-    "shx": "^0.3.4",
-    "typescript": "5.4.2"
-  },
+  "workspaces": [
+    "packages/*"
+  ],
   "engines": {
     "node": "^20",
-    "pnpm": "^10"
+    "pnpm": "^9"
   },
-  "packageManager": "pnpm@10.3.0+sha512.ee592eda8815a8a293c206bb0917c4bb0ff274c50def7cbc17be05ec641fc2d1b02490ce660061356bd0d126a4d7eb2ec8830e6959fb8a447571c631d5a2442d"
+  "devDependencies": {
+    "mprocs": "^0.7.2",
+    "wait-on": "^8.0.3",
+    "shx": "^0.3.4"
+  },
+  "packageManager": "pnpm@9.14.2"
 }
