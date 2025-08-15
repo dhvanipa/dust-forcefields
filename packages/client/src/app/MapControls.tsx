@@ -31,16 +31,17 @@ export function MapControls({
   return (
     <div className="leaflet-bottom leaflet-right">
       <div className="leaflet-control leaflet-bar">
-        <button
-          onClick={centerOnPlayer}
-          className={`bg-white border-0 border-b border-gray-300 w-8 h-8 flex items-center justify-center cursor-pointer hover:bg-gray-50 text-black font-bold ${
-            !playerPosition ? "text-gray-400 cursor-not-allowed" : ""
-          }`}
-          disabled={!playerPosition}
-          title="Center on Player"
-        >
-          📍
-        </button>
+        {playerPosition ? (
+          <button
+            onClick={centerOnPlayer}
+            className={
+              "bg-white border-0 border-b border-gray-300 w-8 h-8 flex items-center justify-center cursor-pointer hover:bg-gray-50 text-black font-bold"
+            }
+            title="Center on Player"
+          >
+            📍
+          </button>
+        ) : null}
         <button
           onClick={() => canZoomIn && map?.zoomIn()}
           className={`bg-white border-0 border-b border-gray-300 w-8 h-8 flex items-center justify-center font-bold text-lg ${
