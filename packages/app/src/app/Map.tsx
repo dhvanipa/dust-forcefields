@@ -8,7 +8,7 @@ import { usePlayerPositionQuery } from "../common/usePlayerPositionQuery";
 import { bounds, maxZoom, minZoom, tileSize } from "../config";
 import { MapControls } from "./MapControls";
 import { LocalPlayerMarker } from "./LocalPlayerMarker";
-import { useSyncStatus } from "../mud/useSyncStatus";
+import { ForceFieldOverlay } from "./ForceFieldOverlay";
 
 // force map to re-render in dev
 const now = Date.now();
@@ -17,7 +17,6 @@ export function Map() {
   const [map, setMap] = useState<LMap | null>(null);
   const [currentZoom, setCurrentZoom] = useState(2);
   const playerPosition = usePlayerPositionQuery();
-  const syncStatus = useSyncStatus();
 
   useEffect(() => {
     if (!map) return;
@@ -66,13 +65,7 @@ export function Map() {
         {playerPosition.data ? (
           <LocalPlayerMarker map={map} playerPosition={playerPosition.data} />
         ) : null}
-        {!syncStatus.isLive && (
-          <div className="leaflet-top leaflet-left">
-            <div className="leaflet-control bg-blue-600 text-white px-4 py-2 rounded shadow">
-              Syncing ({syncStatus.percentage}%)...
-            </div>
-          </div>
-        )}
+        <ForceFieldOverlay />
         <MapControls
           map={map}
           currentZoom={currentZoom}
