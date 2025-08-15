@@ -6,6 +6,7 @@ import { createTileLayerComponent } from "@react-leaflet/core";
 import { MapContainer, type TileLayerProps } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { usePlayerPositionQuery } from "../common/usePlayerPositionQuery";
+import { Vec3, type ReadonlyVec3 } from "@dust/world/internal";
 
 // force map to re-render in dev
 const now = Date.now();
@@ -15,19 +16,22 @@ export function Map() {
   const [map, setMap] = useState<LMap | null>(null);
   const [tilesUpdatedAt, setTilesUpdatedAt] = useState(0);
   const playerPosition = usePlayerPositionQuery();
-  const [x, y, z] = playerPosition.data
-    ? [playerPosition.data.x, playerPosition.data.y, playerPosition.data.z]
-    : [0, 0, 0];
-
-  const center = useMemo(
-    () => [-(z ?? 0), x ?? 0] satisfies [number, number],
-    [z, x]
-  );
+  const [initialPosition, setInitialPosition] = useState<Vec3 | null>(null);
 
   useEffect(() => {
-    if (!map) return;
-    map.setView(center, undefined, { animate: false });
-  }, [map, center]);
+    if (!playerPosition.data) return;
+    if (initialPosition) return;
+
+    setInitialPosition([
+      playerPosition.data.x,
+      playerPosition.data.y,
+      playerPosition.data.z,
+    ]);
+  }, [playerPosition.data]);
+
+  if (!dustClient) {
+    return null;
+  }
 
   return (
     <div className="fullpage-map pannable-map-container flex relative z-0 h-full">
@@ -36,7 +40,18 @@ export function Map() {
         key={now}
         ref={setMap}
         crs={CRS.Simple}
-        center={center}
+        center={worldToPannableMapCoordinates(initialPosition ?? [0, 0, 0])}
+        minZoom={-1}
+        maxZoom={3}
+        maxBoundsViscosity={0.5}
+        bounds={[
+          [3072, -1536],
+          [-1024, 2560],
+        ]}
+        maxBounds={[
+          [3072, -1536],
+          [-1024, 2560],
+        ]}
         zoom={2}
         attributionControl={false}
       >
@@ -76,3 +91,9 @@ const TileLayer = createTileLayerComponent<
     layer.getTileUrl = props.getTileUrl;
   }
 );
+
+type Vec2 = [x: number, y: number];
+
+function worldToPannableMapCoordinates(pos: ReadonlyVec3): Vec2 {
+  return [-pos[2], pos[0]];
+}
