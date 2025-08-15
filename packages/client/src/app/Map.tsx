@@ -11,6 +11,7 @@ import { Marker } from "react-leaflet";
 import { divIcon } from "leaflet";
 
 import localPlayerMarkerBig from "/public/player-marker-small.png";
+import { usePlayerOrientationQuery } from "../common/usePlayerOrientationQuery";
 
 // force map to re-render in dev
 const now = Date.now();
@@ -20,6 +21,7 @@ export function Map() {
   const [map, setMap] = useState<LMap | null>(null);
   const [tilesUpdatedAt, setTilesUpdatedAt] = useState(0);
   const playerPosition = usePlayerPositionQuery();
+  const playerOrientation = usePlayerOrientationQuery();
   const playerMapPos: Vec2 = playerPosition.data
     ? worldToPannableMapCoordinates([
         playerPosition.data.x,
@@ -28,14 +30,14 @@ export function Map() {
       ])
     : [0, 0];
   const [initialPosition, setInitialPosition] = useState<Vec3 | null>(null);
-  const orientation = 0;
+  const orientation = playerOrientation.data ? -playerOrientation.data.yaw : 0;
   const icon = useMemo(
     () =>
       divIcon({
         iconSize: [24, 24],
         iconAnchor: [24 / 2, 24 / 2],
         className: "local-marker",
-        html: `<div style="transform: rotate(${orientation}rad); background-image: url(${localPlayerMarkerBig.src})" class="local-marker-inner"></div>`,
+        html: `<div style="transform: rotate(${orientation}rad); background-image: url(${localPlayerMarkerBig})" class="local-marker-inner"></div>`,
       }),
     [orientation]
   );
