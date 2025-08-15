@@ -94,7 +94,7 @@ export function Map() {
           minZoom={-1}
           maxZoom={4}
         />
-        <Marker position={playerMapPos} icon={icon} zIndexOffset={100000} />;
+        <Marker position={playerMapPos} icon={icon} zIndexOffset={100000} />
       </MapContainer>
     </div>
   );
