@@ -40,7 +40,7 @@ export function LocalPlayerMarker({
     if (!map) return;
 
     map.setView(playerMapPos, 2);
-  }, [map, playerMapPos]);
+  }, [map]);
 
   return <Marker position={playerMapPos} icon={icon} zIndexOffset={100000} />;
 }
