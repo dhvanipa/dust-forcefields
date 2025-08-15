@@ -13,5 +13,6 @@ export function useDustClient() {
       );
       return dustClient;
     },
+    staleTime: Infinity,
   });
 }
