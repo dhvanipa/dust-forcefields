@@ -10,7 +10,7 @@ import { Vec3, type ReadonlyVec3 } from "@dust/world/internal";
 import { Marker } from "react-leaflet";
 import { divIcon } from "leaflet";
 
-import localPlayerMarkerBig from "/public/player-marker-small.png";
+import localPlayerMarkerBig from "/player-marker-small.png";
 import { usePlayerOrientationQuery } from "../common/usePlayerOrientationQuery";
 
 // force map to re-render in dev
@@ -58,7 +58,7 @@ export function Map() {
   }
 
   return (
-    <div className="fullpage-map pannable-map-container flex relative z-0 h-full">
+    <div className="map flex relative z-0 h-full">
       <MapContainer
         // force map to re-render in dev
         key={now}
