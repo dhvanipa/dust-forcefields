@@ -8,6 +8,7 @@ import { stash, tables } from "../mud/stash";
 import { decodePosition, objectsByName, type Vec3 } from "@dust/world/internal";
 import { getOptimisticEnergy } from "../common/getOptimisticEnergy";
 import { Matches } from "@latticexyz/stash/internal";
+import { useDustClient } from "../common/useDustClient";
 
 type ForceField = {
   entityId: Hex;
@@ -83,7 +84,9 @@ function ForceFieldMenu({
   onToggleSettings: () => void;
 }) {
   const map = useMap();
-  const [controlElement, setControlElement] = useState<HTMLDivElement | null>(null);
+  const [controlElement, setControlElement] = useState<HTMLDivElement | null>(
+    null
+  );
   const worldLowerY = -64;
   const worldUpperY = 320;
 
@@ -144,9 +147,9 @@ function ForceFieldMenu({
             max={worldUpperY}
             value={maxY}
             onChange={(e) => onMaxYChange(Number(e.target.value))}
-            className="w-32 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
             style={{
-              background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((maxY - worldLowerY) / (worldUpperY - worldLowerY)) * 100}%, #e5e7eb ${((maxY - worldLowerY) / (worldUpperY - worldLowerY)) * 100}%, #e5e7eb 100%)`
+              background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((maxY - worldLowerY) / (worldUpperY - worldLowerY)) * 100}%, #e5e7eb ${((maxY - worldLowerY) / (worldUpperY - worldLowerY)) * 100}%, #e5e7eb 100%)`,
             }}
           />
           <div className="flex justify-between text-xs text-gray-500 mt-1">
@@ -167,6 +170,7 @@ function ForceFieldInfo({
   forceField: ForceField | null;
   onClose: () => void;
 }) {
+  const { data: dustClient } = useDustClient();
   const map = useMap();
   const [controlElement, setControlElement] = useState<HTMLDivElement | null>(
     null
@@ -200,7 +204,27 @@ function ForceFieldInfo({
   return createPortal(
     <div className="bg-white border border-gray-300 rounded shadow-lg p-4 max-w-sm">
       <div className="flex justify-between items-center mb-2">
-        <h3 className="font-bold text-lg">Force Field Details</h3>
+        <h3 className="font-bold text-lg">
+          Force Field at{" "}
+          <span
+            className={`cursor-pointer ${dustClient ? "hover:text-blue-600" : ""}`}
+            onClick={() => {
+              if (!dustClient) {
+                return;
+              }
+
+              dustClient.provider.request({
+                method: "setWaypoint",
+                params: {
+                  entity: forceField.entityId,
+                  label: "Force Field",
+                },
+              });
+            }}
+          >
+            ({decodePosition(forceField.entityId).join(", ")})
+          </span>
+        </h3>
         <button
           onClick={onClose}
           className="w-6 h-6 flex items-center justify-center cursor-pointer hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
@@ -211,7 +235,7 @@ function ForceFieldInfo({
       </div>
       <div className="space-y-2 text-sm">
         <div>
-          <span className="font-medium">Entity ID:</span>
+          <span className="font-medium">Entity Id:</span>
           <div className="font-mono text-xs break-all select-text cursor-text">
             {forceField.entityId}
           </div>
@@ -219,7 +243,8 @@ function ForceFieldInfo({
         <div>
           <span className="font-medium">Energy:</span>
           <div className="font-mono select-text cursor-text">
-            {forceField.energy.toString()}
+            {(forceField.energy / BigInt(10 ** 14)).toLocaleString()} (
+            {forceField.energy.toString()})
           </div>
         </div>
         <div>
@@ -228,14 +253,14 @@ function ForceFieldInfo({
             {forceField.fragments.length} fragments
           </div>
         </div>
-        <div>
+        {/* <div>
           <span className="font-medium">Fragment Positions:</span>
           <div className="font-mono text-xs select-text cursor-text max-h-32 overflow-y-auto">
             {forceField.fragments.map((fragment, index) => (
               <div key={index}>[{fragment.join(", ")}]</div>
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
     </div>,
     controlElement
@@ -277,7 +302,7 @@ export function ForceFieldOverlay() {
       });
       const fragmentSize = 8;
       const fragmentPositions: Vec3[] = [];
-      
+
       for (const fragment of Object.values(fragments.keys)) {
         const fragmentRecord = stash.getRecord({
           table: tables.Fragment,
