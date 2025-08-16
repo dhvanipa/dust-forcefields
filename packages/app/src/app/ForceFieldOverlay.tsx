@@ -12,11 +12,10 @@ import { Matches } from "@latticexyz/stash/internal";
 type ForceField = {
   entityId: Hex;
   energy: bigint;
-  lowerCoord: Vec3;
-  upperCoord: Vec3;
+  fragments: Vec3[];
 };
 
-function ForceFieldRectangle({
+function ForceFieldRectangles({
   forceField,
   isSelected,
   onSelect,
@@ -25,25 +24,40 @@ function ForceFieldRectangle({
   isSelected: boolean;
   onSelect: () => void;
 }) {
-  const bounds = [
-    worldToMapCoordinates(forceField.lowerCoord),
-    worldToMapCoordinates(forceField.upperCoord),
-  ] as [Vec2, Vec2];
+  const fragmentSize = 8;
 
   return (
-    <Rectangle
-      bounds={bounds}
-      pathOptions={{
-        color: isSelected ? "#0066ff" : "#ff0000",
-        weight: isSelected ? 3 : 2,
-        opacity: 0.8,
-        fillColor: isSelected ? "#0066ff" : "#ff0000",
-        fillOpacity: 0.2,
-      }}
-      eventHandlers={{
-        click: onSelect,
-      }}
-    />
+    <>
+      {forceField.fragments.map((fragment, index) => {
+        const lowerCoord = fragment;
+        const upperCoord: Vec3 = [
+          fragment[0] + fragmentSize,
+          fragment[1] + fragmentSize,
+          fragment[2] + fragmentSize,
+        ];
+        const bounds = [
+          worldToMapCoordinates(lowerCoord),
+          worldToMapCoordinates(upperCoord),
+        ] as [Vec2, Vec2];
+
+        return (
+          <Rectangle
+            key={`${forceField.entityId}-${index}`}
+            bounds={bounds}
+            pathOptions={{
+              color: isSelected ? "#0066ff" : "#ff0000",
+              weight: isSelected ? 3 : 2,
+              opacity: 0.8,
+              fillColor: isSelected ? "#0066ff" : "#ff0000",
+              fillOpacity: 0.2,
+            }}
+            eventHandlers={{
+              click: onSelect,
+            }}
+          />
+        );
+      })}
+    </>
   );
 }
 
@@ -137,15 +151,17 @@ function ForceFieldInfo({
           </div>
         </div>
         <div>
-          <span className="font-medium">Lower Coord:</span>
+          <span className="font-medium">Fragments:</span>
           <div className="font-mono select-text cursor-text">
-            [{forceField.lowerCoord.join(", ")}]
+            {forceField.fragments.length} fragments
           </div>
         </div>
         <div>
-          <span className="font-medium">Upper Coord:</span>
-          <div className="font-mono select-text cursor-text">
-            [{forceField.upperCoord.join(", ")}]
+          <span className="font-medium">Fragment Positions:</span>
+          <div className="font-mono text-xs select-text cursor-text max-h-32 overflow-y-auto">
+            {forceField.fragments.map((fragment, index) => (
+              <div key={index}>[{fragment.join(", ")}]</div>
+            ))}
           </div>
         </div>
       </div>
@@ -186,8 +202,8 @@ export function ForceFieldOverlay() {
         query: [Matches(tables.Fragment, { forceField: entityId })],
       });
       const fragmentSize = 8;
-      const lowerCoord: Vec3 = [Infinity, Infinity, Infinity];
-      const upperCoord: Vec3 = [-Infinity, -Infinity, -Infinity];
+      const fragmentPositions: Vec3[] = [];
+      
       for (const fragment of Object.values(fragments.keys)) {
         const fragmentRecord = stash.getRecord({
           table: tables.Fragment,
@@ -201,25 +217,21 @@ export function ForceFieldOverlay() {
         }
 
         const fragmentPos = decodePosition(fragment.entityId as Hex);
-        const [fragmentX, fragmentY, fragmentZ] = [
+        const fragmentCoords: Vec3 = [
           fragmentPos[0] * fragmentSize,
           fragmentPos[1] * fragmentSize,
           fragmentPos[2] * fragmentSize,
         ];
-        lowerCoord[0] = Math.min(lowerCoord[0], fragmentX);
-        lowerCoord[1] = Math.min(lowerCoord[1], fragmentY);
-        lowerCoord[2] = Math.min(lowerCoord[2], fragmentZ);
-        upperCoord[0] = Math.max(upperCoord[0], fragmentX + fragmentSize);
-        upperCoord[1] = Math.max(upperCoord[1], fragmentY + fragmentSize);
-        upperCoord[2] = Math.max(upperCoord[2], fragmentZ + fragmentSize);
+        fragmentPositions.push(fragmentCoords);
       }
 
-      newForceFields.push({
-        entityId: entityId,
-        energy: getOptimisticEnergy(energy) ?? 0n,
-        lowerCoord: lowerCoord,
-        upperCoord: upperCoord,
-      });
+      if (fragmentPositions.length > 0) {
+        newForceFields.push({
+          entityId: entityId,
+          energy: getOptimisticEnergy(energy) ?? 0n,
+          fragments: fragmentPositions,
+        });
+      }
     }
 
     setForceFields(newForceFields);
@@ -245,7 +257,7 @@ export function ForceFieldOverlay() {
     <>
       {showForceFields &&
         forceFields.map((forceField, index) => (
-          <ForceFieldRectangle
+          <ForceFieldRectangles
             key={forceField.entityId || index}
             forceField={forceField}
             isSelected={selectedForceField?.entityId === forceField.entityId}
