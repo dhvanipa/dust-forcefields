@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@dust/world": "https://pkg.pr.new/dustproject/dust/@dust/world@f2746c5",
+    "@dust/programs": "https://pkg.pr.new/dustproject/dust/@dust/programs@f2746c5",
     "@latticexyz/common": "2.2.23-5ebd3d31b6ab3fbbfa8994fefcbf46d4e44c6ec2",
     "@latticexyz/stash": "2.2.23-5ebd3d31b6ab3fbbfa8994fefcbf46d4e44c6ec2",
     "@latticexyz/store-sync": "2.2.23-5ebd3d31b6ab3fbbfa8994fefcbf46d4e44c6ec2",

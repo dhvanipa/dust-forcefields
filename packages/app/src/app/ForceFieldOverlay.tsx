@@ -5,15 +5,24 @@ import { useSyncStatus } from "../mud/useSyncStatus";
 import { worldToMapCoordinates, type Vec2 } from "../config";
 import type { Hex } from "viem";
 import { stash, tables } from "../mud/stash";
-import { decodePosition, objectsByName, type Vec3 } from "@dust/world/internal";
+import {
+  decodeEntityType,
+  decodePlayer,
+  decodePosition,
+  EntityTypes,
+  objectsByName,
+  type Vec3,
+} from "@dust/world/internal";
 import { getOptimisticEnergy } from "../common/getOptimisticEnergy";
 import { Matches } from "@latticexyz/stash/internal";
 import { useDustClient } from "../common/useDustClient";
+import { AccountName } from "../common/AccountName";
 
 type ForceField = {
   entityId: Hex;
   energy: bigint;
   fragments: Vec3[];
+  owner?: Hex;
 };
 
 function ForceFieldRectangles({
@@ -201,6 +210,10 @@ function ForceFieldInfo({
 
   if (!forceField || !controlElement) return null;
 
+  const ownerEntityType = forceField.owner
+    ? decodeEntityType(forceField.owner)
+    : null;
+
   return createPortal(
     <div className="bg-white border border-gray-300 rounded shadow-lg p-4 max-w-sm">
       <div className="flex justify-between items-center mb-2">
@@ -238,6 +251,16 @@ function ForceFieldInfo({
           <span className="font-medium">Entity Id:</span>
           <div className="font-mono text-xs break-all select-text cursor-text">
             {forceField.entityId}
+          </div>
+        </div>
+        <div>
+          <span className="font-medium">Owner:</span>
+          <div className="font-mono text-xs break-all select-text cursor-text">
+            {forceField.owner && ownerEntityType === EntityTypes.Player ? (
+              <AccountName address={decodePlayer(forceField.owner)} />
+            ) : (
+              forceField.owner ?? "Unknown"
+            )}
           </div>
         </div>
         <div>
@@ -324,11 +347,25 @@ export function ForceFieldOverlay() {
         fragmentPositions.push(fragmentCoords);
       }
 
+      let owner: Hex | undefined = undefined;
+      const accessGroupRecord = stash.getRecord({
+        table: tables.dfprograms_1__EntityAccessGroup,
+        key: { entityId: entityId },
+      });
+      if (accessGroupRecord?.groupId) {
+        const accessGroupOwner = stash.getRecord({
+          table: tables.dfprograms_1__AccessGroupOwner,
+          key: { groupId: accessGroupRecord.groupId },
+        });
+        owner = accessGroupOwner?.owner;
+      }
+
       if (fragmentPositions.length > 0) {
         newForceFields.push({
           entityId: entityId,
           energy: getOptimisticEnergy(energy) ?? 0n,
           fragments: fragmentPositions,
+          owner: owner,
         });
       }
     }
@@ -346,7 +383,7 @@ export function ForceFieldOverlay() {
     return (
       <div className="leaflet-top leaflet-left">
         <div className="leaflet-control bg-yellow-300 text-gray-700 px-4 py-2 rounded shadow">
-          Syncing ({syncStatus.percentage}%)...
+          Loading ({syncStatus.percentage}%)...
         </div>
       </div>
     );
