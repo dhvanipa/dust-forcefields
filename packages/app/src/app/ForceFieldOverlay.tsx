@@ -19,44 +19,48 @@ function ForceFieldRectangles({
   forceField,
   isSelected,
   onSelect,
+  maxY,
 }: {
   forceField: ForceField;
   isSelected: boolean;
   onSelect: () => void;
+  maxY: number;
 }) {
   const fragmentSize = 8;
 
   return (
     <>
-      {forceField.fragments.map((fragment, index) => {
-        const lowerCoord = fragment;
-        const upperCoord: Vec3 = [
-          fragment[0] + fragmentSize,
-          fragment[1] + fragmentSize,
-          fragment[2] + fragmentSize,
-        ];
-        const bounds = [
-          worldToMapCoordinates(lowerCoord),
-          worldToMapCoordinates(upperCoord),
-        ] as [Vec2, Vec2];
+      {forceField.fragments
+        .filter((fragment) => fragment[1] <= maxY)
+        .map((fragment, index) => {
+          const lowerCoord = fragment;
+          const upperCoord: Vec3 = [
+            fragment[0] + fragmentSize,
+            fragment[1] + fragmentSize,
+            fragment[2] + fragmentSize,
+          ];
+          const bounds = [
+            worldToMapCoordinates(lowerCoord),
+            worldToMapCoordinates(upperCoord),
+          ] as [Vec2, Vec2];
 
-        return (
-          <Rectangle
-            key={`${forceField.entityId}-${index}`}
-            bounds={bounds}
-            pathOptions={{
-              color: isSelected ? "#0066ff" : "#ff0000",
-              weight: isSelected ? 3 : 2,
-              opacity: 0.8,
-              fillColor: isSelected ? "#0066ff" : "#ff0000",
-              fillOpacity: 0.2,
-            }}
-            eventHandlers={{
-              click: onSelect,
-            }}
-          />
-        );
-      })}
+          return (
+            <Rectangle
+              key={`${forceField.entityId}-${index}`}
+              bounds={bounds}
+              pathOptions={{
+                color: isSelected ? "#0066ff" : "#ff0000",
+                weight: isSelected ? 3 : 2,
+                opacity: 0.8,
+                fillColor: isSelected ? "#0066ff" : "#ff0000",
+                fillOpacity: 0.2,
+              }}
+              eventHandlers={{
+                click: onSelect,
+              }}
+            />
+          );
+        })}
     </>
   );
 }
@@ -65,26 +69,94 @@ function ForceFieldMenu({
   forceFieldCount,
   showForceFields,
   onToggleVisibility,
+  maxY,
+  onMaxYChange,
+  showSettings,
+  onToggleSettings,
 }: {
   forceFieldCount: number;
   showForceFields: boolean;
   onToggleVisibility: () => void;
+  maxY: number;
+  onMaxYChange: (y: number) => void;
+  showSettings: boolean;
+  onToggleSettings: () => void;
 }) {
-  return (
-    <div className="leaflet-top leaflet-left">
-      <div className="leaflet-control leaflet-bar bg-white flex items-center">
+  const map = useMap();
+  const [controlElement, setControlElement] = useState<HTMLDivElement | null>(null);
+  const worldLowerY = -64;
+  const worldUpperY = 320;
+
+  useEffect(() => {
+    if (!map) return;
+
+    const control = new (window as any).L.Control({ position: "topleft" });
+
+    control.onAdd = function () {
+      const div = (window as any).L.DomUtil.create("div", "leaflet-control");
+      (window as any).L.DomEvent.disableClickPropagation(div);
+      (window as any).L.DomEvent.disableScrollPropagation(div);
+      setControlElement(div);
+      return div;
+    };
+
+    control.addTo(map);
+
+    return () => {
+      if (controlElement) {
+        setControlElement(null);
+      }
+      map.removeControl(control);
+    };
+  }, [map]);
+
+  if (!controlElement) return null;
+
+  return createPortal(
+    <div className="leaflet-bar bg-white">
+      <div className="flex items-center">
         <div className="px-3 py-2 text-sm font-medium text-gray-700 border-r border-gray-300">
           Force Fields: {forceFieldCount}
         </div>
         <button
           onClick={onToggleVisibility}
-          className="w-8 h-8 flex items-center justify-center cursor-pointer hover:bg-gray-50"
+          className="w-8 h-8 flex items-center justify-center cursor-pointer hover:bg-gray-50 border-r border-gray-300"
           title={showForceFields ? "Hide Force Fields" : "Show Force Fields"}
         >
           {showForceFields ? "👁️" : "🙈"}
         </button>
+        <button
+          onClick={onToggleSettings}
+          className="w-8 h-8 flex items-center justify-center cursor-pointer hover:bg-gray-50"
+          title={showSettings ? "Hide Settings" : "Show Settings"}
+        >
+          ⚙️
+        </button>
       </div>
-    </div>
+      {showSettings && (
+        <div className="px-3 py-2 border-t border-gray-300">
+          <div className="text-xs font-medium text-gray-700 mb-1">
+            Max Y: {maxY}
+          </div>
+          <input
+            type="range"
+            min={worldLowerY}
+            max={worldUpperY}
+            value={maxY}
+            onChange={(e) => onMaxYChange(Number(e.target.value))}
+            className="w-32 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            style={{
+              background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((maxY - worldLowerY) / (worldUpperY - worldLowerY)) * 100}%, #e5e7eb ${((maxY - worldLowerY) / (worldUpperY - worldLowerY)) * 100}%, #e5e7eb 100%)`
+            }}
+          />
+          <div className="flex justify-between text-xs text-gray-500 mt-1">
+            <span>{worldLowerY}</span>
+            <span>{worldUpperY}</span>
+          </div>
+        </div>
+      )}
+    </div>,
+    controlElement
   );
 }
 
@@ -176,6 +248,8 @@ export function ForceFieldOverlay() {
   const [forceFields, setForceFields] = useState<ForceField[]>([]);
   const [selectedForceField, setSelectedForceField] =
     useState<ForceField | null>(null);
+  const [maxY, setMaxY] = useState(320);
+  const [showSettings, setShowSettings] = useState(false);
 
   const updateForceFields = () => {
     const energyEntities = stash.getKeys({ table: tables.Energy });
@@ -262,12 +336,17 @@ export function ForceFieldOverlay() {
             forceField={forceField}
             isSelected={selectedForceField?.entityId === forceField.entityId}
             onSelect={() => setSelectedForceField(forceField)}
+            maxY={maxY}
           />
         ))}
       <ForceFieldMenu
         forceFieldCount={forceFields.length}
         showForceFields={showForceFields}
         onToggleVisibility={() => setShowForceFields(!showForceFields)}
+        maxY={maxY}
+        onMaxYChange={setMaxY}
+        showSettings={showSettings}
+        onToggleSettings={() => setShowSettings(!showSettings)}
       />
       <ForceFieldInfo
         forceField={selectedForceField}
