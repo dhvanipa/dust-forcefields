@@ -17,6 +17,7 @@ import { getOptimisticEnergy } from "../common/getOptimisticEnergy";
 import { Matches } from "@latticexyz/stash/internal";
 import { useDustClient } from "../common/useDustClient";
 import { AccountName } from "../common/AccountName";
+import { TruncatedHex } from "../common/TruncatedHex";
 
 type ForceField = {
   entityId: Hex;
@@ -217,8 +218,12 @@ function ForceFieldInfo({
   return createPortal(
     <div className="bg-white border border-gray-300 rounded shadow-lg p-4 max-w-sm">
       <div className="flex justify-between items-center mb-2">
-        <h3 className="font-bold text-lg">
-          Force Field at{" "}
+        <h3 className="font-bold mr-1" style={{ fontSize: "1rem" }}>
+          <img
+            src={`https://alpha.dustproject.org/api/assets/objects/${objectsByName.ForceField.id}/icon`}
+            alt="Force Field"
+            className="inline-block w-8 h-8"
+          />{" "}
           <span
             className={`cursor-pointer ${dustClient ? "hover:text-blue-600" : ""}`}
             onClick={() => {
@@ -250,7 +255,7 @@ function ForceFieldInfo({
         <div>
           <span className="font-medium">Entity Id:</span>
           <div className="font-mono text-xs break-all select-text cursor-text">
-            {forceField.entityId}
+            <TruncatedHex hex={forceField.entityId} />
           </div>
         </div>
         <div>
@@ -266,8 +271,8 @@ function ForceFieldInfo({
         <div>
           <span className="font-medium">Energy:</span>
           <div className="font-mono select-text cursor-text">
-            {(forceField.energy / BigInt(10 ** 14)).toLocaleString()} (
-            {forceField.energy.toString()})
+            {(forceField.energy / BigInt(10 ** 14)).toLocaleString()}
+            {/* {forceField.energy.toString()}) */}
           </div>
         </div>
         <div>
