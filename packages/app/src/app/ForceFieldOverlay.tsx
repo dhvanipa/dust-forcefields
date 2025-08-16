@@ -1,25 +1,25 @@
 import { useEffect, useState } from "react";
 import { Rectangle } from "react-leaflet";
 import { useSyncStatus } from "../mud/useSyncStatus";
-import type { Vec2 } from "../config";
+import { worldToMapCoordinates, type Vec2 } from "../config";
 import type { Hex } from "viem";
 import { stash, tables } from "../mud/stash";
-import { decodePosition, objectsByName } from "@dust/world/internal";
+import { decodePosition, objectsByName, type Vec3 } from "@dust/world/internal";
 import { getOptimisticEnergy } from "../common/getOptimisticEnergy";
 import { Matches } from "@latticexyz/stash/internal";
 
 type ForceField = {
   entityId: Hex;
   energy: bigint;
-  lowerCoord: Vec2;
-  upperCoord: Vec2;
+  lowerCoord: Vec3;
+  upperCoord: Vec3;
 };
 
 function ForceFieldRectangle({ forceField }: { forceField: ForceField }) {
   const bounds = [
-    [forceField.lowerCoord[1], forceField.lowerCoord[0]],
-    [forceField.upperCoord[1], forceField.upperCoord[0]],
-  ] as [[number, number], [number, number]];
+    worldToMapCoordinates(forceField.lowerCoord),
+    worldToMapCoordinates(forceField.upperCoord),
+  ] as [Vec2, Vec2];
 
   return (
     <Rectangle
@@ -88,8 +88,8 @@ export function ForceFieldOverlay() {
         query: [Matches(tables.Fragment, { forceField: entityId })],
       });
       const fragmentSize = 8;
-      const lowerCoord: Vec2 = [Infinity, Infinity];
-      const upperCoord: Vec2 = [-Infinity, -Infinity];
+      const lowerCoord: Vec3 = [Infinity, Infinity, Infinity];
+      const upperCoord: Vec3 = [-Infinity, -Infinity, -Infinity];
       for (const fragment of Object.values(fragments.keys)) {
         const fragmentPos = decodePosition(fragment.entityId as Hex);
         const [fragmentX, fragmentY, fragmentZ] = [
@@ -98,9 +98,11 @@ export function ForceFieldOverlay() {
           fragmentPos[2] * fragmentSize,
         ];
         lowerCoord[0] = Math.min(lowerCoord[0], fragmentX);
-        lowerCoord[1] = Math.min(lowerCoord[1], fragmentZ);
+        lowerCoord[1] = Math.min(lowerCoord[1], fragmentY);
+        lowerCoord[2] = Math.min(lowerCoord[2], fragmentZ);
         upperCoord[0] = Math.max(upperCoord[0], fragmentX);
-        upperCoord[1] = Math.max(upperCoord[1], fragmentZ);
+        upperCoord[1] = Math.max(upperCoord[1], fragmentY);
+        upperCoord[2] = Math.max(upperCoord[2], fragmentZ);
       }
 
       newForceFields.push({
@@ -119,15 +121,6 @@ export function ForceFieldOverlay() {
 
     updateForceFields();
   }, [syncStatus]);
-
-  // const forceFields: ForceField[] = [
-  //   {
-  //     entityId: "0x",
-  //     energy: 10n,
-  //     lowerCoord: [400, 1000],
-  //     upperCoord: [500, 1500],
-  //   },
-  // ];
 
   if (!syncStatus.isLive) {
     return (
