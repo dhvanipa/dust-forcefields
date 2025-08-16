@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Rectangle } from "react-leaflet";
+import { Rectangle, useMap } from "react-leaflet";
+import { createPortal } from "react-dom";
 import { useSyncStatus } from "../mud/useSyncStatus";
 import { worldToMapCoordinates, type Vec2 } from "../config";
 import type { Hex } from "viem";
@@ -15,7 +16,15 @@ type ForceField = {
   upperCoord: Vec3;
 };
 
-function ForceFieldRectangle({ forceField }: { forceField: ForceField }) {
+function ForceFieldRectangle({ 
+  forceField, 
+  isSelected, 
+  onSelect 
+}: { 
+  forceField: ForceField;
+  isSelected: boolean;
+  onSelect: () => void;
+}) {
   const bounds = [
     worldToMapCoordinates(forceField.lowerCoord),
     worldToMapCoordinates(forceField.upperCoord),
@@ -25,11 +34,14 @@ function ForceFieldRectangle({ forceField }: { forceField: ForceField }) {
     <Rectangle
       bounds={bounds}
       pathOptions={{
-        color: "#ff0000",
-        weight: 2,
+        color: isSelected ? "#0066ff" : "#ff0000",
+        weight: isSelected ? 3 : 2,
         opacity: 0.8,
-        fillColor: "#ff0000",
+        fillColor: isSelected ? "#0066ff" : "#ff0000",
         fillOpacity: 0.2,
+      }}
+      eventHandlers={{
+        click: onSelect,
       }}
     />
   );
@@ -62,10 +74,81 @@ function ForceFieldMenu({
   );
 }
 
+function ForceFieldInfo({ 
+  forceField, 
+  onClose 
+}: { 
+  forceField: ForceField | null;
+  onClose: () => void;
+}) {
+  const map = useMap();
+  const [controlElement, setControlElement] = useState<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!map || !forceField) return;
+
+    const control = new (window as any).L.Control({ position: 'topright' });
+    
+    control.onAdd = function() {
+      const div = (window as any).L.DomUtil.create('div', 'leaflet-control');
+      (window as any).L.DomEvent.disableClickPropagation(div);
+      (window as any).L.DomEvent.disableScrollPropagation(div);
+      setControlElement(div);
+      return div;
+    };
+
+    control.addTo(map);
+
+    return () => {
+      if (controlElement) {
+        setControlElement(null);
+      }
+      map.removeControl(control);
+    };
+  }, [map, forceField]);
+
+  if (!forceField || !controlElement) return null;
+
+  return createPortal(
+    <div className="bg-white border border-gray-300 rounded shadow-lg p-4 max-w-sm">
+      <div className="flex justify-between items-center mb-2">
+        <h3 className="font-bold text-lg">Force Field Details</h3>
+        <button
+          onClick={onClose}
+          className="w-6 h-6 flex items-center justify-center cursor-pointer hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
+          title="Close"
+        >
+          ✕
+        </button>
+      </div>
+      <div className="space-y-2 text-sm">
+        <div>
+          <span className="font-medium">Entity ID:</span>
+          <div className="font-mono text-xs break-all select-text cursor-text">{forceField.entityId}</div>
+        </div>
+        <div>
+          <span className="font-medium">Energy:</span>
+          <div className="font-mono select-text cursor-text">{forceField.energy.toString()}</div>
+        </div>
+        <div>
+          <span className="font-medium">Lower Coord:</span>
+          <div className="font-mono select-text cursor-text">[{forceField.lowerCoord.join(", ")}]</div>
+        </div>
+        <div>
+          <span className="font-medium">Upper Coord:</span>
+          <div className="font-mono select-text cursor-text">[{forceField.upperCoord.join(", ")}]</div>
+        </div>
+      </div>
+    </div>,
+    controlElement
+  );
+}
+
 export function ForceFieldOverlay() {
   const syncStatus = useSyncStatus();
   const [showForceFields, setShowForceFields] = useState(true);
   const [forceFields, setForceFields] = useState<ForceField[]>([]);
+  const [selectedForceField, setSelectedForceField] = useState<ForceField | null>(null);
 
   const updateForceFields = () => {
     const energyEntities = stash.getKeys({ table: tables.Energy });
@@ -139,12 +222,18 @@ export function ForceFieldOverlay() {
           <ForceFieldRectangle
             key={forceField.entityId || index}
             forceField={forceField}
+            isSelected={selectedForceField?.entityId === forceField.entityId}
+            onSelect={() => setSelectedForceField(forceField)}
           />
         ))}
       <ForceFieldMenu
         forceFieldCount={forceFields.length}
         showForceFields={showForceFields}
         onToggleVisibility={() => setShowForceFields(!showForceFields)}
+      />
+      <ForceFieldInfo 
+        forceField={selectedForceField} 
+        onClose={() => setSelectedForceField(null)} 
       />
     </>
   );
