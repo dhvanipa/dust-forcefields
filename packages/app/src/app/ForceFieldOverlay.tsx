@@ -209,9 +209,9 @@ export function ForceFieldOverlay() {
         lowerCoord[0] = Math.min(lowerCoord[0], fragmentX);
         lowerCoord[1] = Math.min(lowerCoord[1], fragmentY);
         lowerCoord[2] = Math.min(lowerCoord[2], fragmentZ);
-        upperCoord[0] = Math.max(upperCoord[0], fragmentX);
-        upperCoord[1] = Math.max(upperCoord[1], fragmentY);
-        upperCoord[2] = Math.max(upperCoord[2], fragmentZ);
+        upperCoord[0] = Math.max(upperCoord[0], fragmentX + fragmentSize);
+        upperCoord[1] = Math.max(upperCoord[1], fragmentY + fragmentSize);
+        upperCoord[2] = Math.max(upperCoord[2], fragmentZ + fragmentSize);
       }
 
       newForceFields.push({
