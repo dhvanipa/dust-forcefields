@@ -303,13 +303,6 @@ export function ForceFieldOverlay() {
     const energyEntities = stash.getKeys({ table: tables.Energy });
     const newForceFields: ForceField[] = [];
     for (const entity of Object.values(energyEntities)) {
-      const objectType = stash.getRecord({
-        table: tables.EntityObjectType,
-        key: entity,
-      });
-      if (objectType?.objectType !== objectsByName.ForceField.id) {
-        continue;
-      }
       const machine = stash.getRecord({ table: tables.Machine, key: entity });
       if (!machine) {
         continue;
