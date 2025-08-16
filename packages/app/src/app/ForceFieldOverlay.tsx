@@ -16,11 +16,11 @@ type ForceField = {
   upperCoord: Vec3;
 };
 
-function ForceFieldRectangle({ 
-  forceField, 
-  isSelected, 
-  onSelect 
-}: { 
+function ForceFieldRectangle({
+  forceField,
+  isSelected,
+  onSelect,
+}: {
   forceField: ForceField;
   isSelected: boolean;
   onSelect: () => void;
@@ -74,23 +74,25 @@ function ForceFieldMenu({
   );
 }
 
-function ForceFieldInfo({ 
-  forceField, 
-  onClose 
-}: { 
+function ForceFieldInfo({
+  forceField,
+  onClose,
+}: {
   forceField: ForceField | null;
   onClose: () => void;
 }) {
   const map = useMap();
-  const [controlElement, setControlElement] = useState<HTMLDivElement | null>(null);
+  const [controlElement, setControlElement] = useState<HTMLDivElement | null>(
+    null
+  );
 
   useEffect(() => {
     if (!map || !forceField) return;
 
-    const control = new (window as any).L.Control({ position: 'topright' });
-    
-    control.onAdd = function() {
-      const div = (window as any).L.DomUtil.create('div', 'leaflet-control');
+    const control = new (window as any).L.Control({ position: "topright" });
+
+    control.onAdd = function () {
+      const div = (window as any).L.DomUtil.create("div", "leaflet-control");
       (window as any).L.DomEvent.disableClickPropagation(div);
       (window as any).L.DomEvent.disableScrollPropagation(div);
       setControlElement(div);
@@ -124,19 +126,27 @@ function ForceFieldInfo({
       <div className="space-y-2 text-sm">
         <div>
           <span className="font-medium">Entity ID:</span>
-          <div className="font-mono text-xs break-all select-text cursor-text">{forceField.entityId}</div>
+          <div className="font-mono text-xs break-all select-text cursor-text">
+            {forceField.entityId}
+          </div>
         </div>
         <div>
           <span className="font-medium">Energy:</span>
-          <div className="font-mono select-text cursor-text">{forceField.energy.toString()}</div>
+          <div className="font-mono select-text cursor-text">
+            {forceField.energy.toString()}
+          </div>
         </div>
         <div>
           <span className="font-medium">Lower Coord:</span>
-          <div className="font-mono select-text cursor-text">[{forceField.lowerCoord.join(", ")}]</div>
+          <div className="font-mono select-text cursor-text">
+            [{forceField.lowerCoord.join(", ")}]
+          </div>
         </div>
         <div>
           <span className="font-medium">Upper Coord:</span>
-          <div className="font-mono select-text cursor-text">[{forceField.upperCoord.join(", ")}]</div>
+          <div className="font-mono select-text cursor-text">
+            [{forceField.upperCoord.join(", ")}]
+          </div>
         </div>
       </div>
     </div>,
@@ -148,7 +158,8 @@ export function ForceFieldOverlay() {
   const syncStatus = useSyncStatus();
   const [showForceFields, setShowForceFields] = useState(true);
   const [forceFields, setForceFields] = useState<ForceField[]>([]);
-  const [selectedForceField, setSelectedForceField] = useState<ForceField | null>(null);
+  const [selectedForceField, setSelectedForceField] =
+    useState<ForceField | null>(null);
 
   const updateForceFields = () => {
     const energyEntities = stash.getKeys({ table: tables.Energy });
@@ -231,9 +242,9 @@ export function ForceFieldOverlay() {
         showForceFields={showForceFields}
         onToggleVisibility={() => setShowForceFields(!showForceFields)}
       />
-      <ForceFieldInfo 
-        forceField={selectedForceField} 
-        onClose={() => setSelectedForceField(null)} 
+      <ForceFieldInfo
+        forceField={selectedForceField}
+        onClose={() => setSelectedForceField(null)}
       />
     </>
   );
