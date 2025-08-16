@@ -172,6 +172,10 @@ export function ForceFieldOverlay() {
       if (objectType?.objectType !== objectsByName.ForceField.id) {
         continue;
       }
+      const machine = stash.getRecord({ table: tables.Machine, key: entity });
+      if (!machine) {
+        continue;
+      }
 
       const energy = stash.getRecord({ table: tables.Energy, key: entity });
       if (!energy?.energy) {
@@ -185,6 +189,17 @@ export function ForceFieldOverlay() {
       const lowerCoord: Vec3 = [Infinity, Infinity, Infinity];
       const upperCoord: Vec3 = [-Infinity, -Infinity, -Infinity];
       for (const fragment of Object.values(fragments.keys)) {
+        const fragmentRecord = stash.getRecord({
+          table: tables.Fragment,
+          key: { entityId: fragment.entityId as Hex },
+        });
+        if (!fragmentRecord) {
+          continue;
+        }
+        if (machine.createdAt !== fragmentRecord.forceFieldCreatedAt) {
+          continue;
+        }
+
         const fragmentPos = decodePosition(fragment.entityId as Hex);
         const [fragmentX, fragmentY, fragmentZ] = [
           fragmentPos[0] * fragmentSize,

@@ -9,6 +9,7 @@ export const tables = {
   Energy: dustWorldConfig.tables.Energy,
   Fragment: dustWorldConfig.tables.Fragment,
   EntityObjectType: dustWorldConfig.tables.EntityObjectType,
+  Machine: dustWorldConfig.tables.Machine,
 };
 
 export const stashConfig = {
