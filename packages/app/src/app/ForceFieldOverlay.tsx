@@ -225,7 +225,7 @@ function ForceFieldInfo({
             className="inline-block w-8 h-8"
           />{" "}
           <span
-            className={`cursor-pointer ${dustClient ? "hover:text-blue-600" : ""}`}
+            className={`${dustClient ? "cursor-pointer hover:text-blue-600" : ""}`}
             onClick={() => {
               if (!dustClient) {
                 return;
