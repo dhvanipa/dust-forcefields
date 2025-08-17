@@ -52,7 +52,7 @@ export function Map() {
       >
         <TileLayer
           getTileUrl={({ x, y, z }) =>
-            `https://staging.dustproject.org/api/assets/map/surface/${x}/${y}/${z}/tile`
+            `https://alpha.dustproject.org/api/assets/map/surface/${x}/${y}/${z}/tile`
           }
           tileSize={tileSize}
           // zoom range of tiles
